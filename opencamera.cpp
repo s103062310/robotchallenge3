@@ -6,30 +6,31 @@ using namespace cv;
 using namespace std;
 
 int main(){
-	
-	/*CvCapture *cap;
-	IplImage *frame;
-	int i=0;
-	
+
+	CvCapture* cap = cvCaptureFromCAM(0);;
+	IplImage* frame;
+
+	// open window
 	cvNamedWindow("Webcam", 1);
-	
-	while(i<10){
-		cap = cvCaptureFromCAM(i);
+
+    // show content of camera
+	while(true){
 		frame = cvQueryFrame(cap);
 		cvShowImage("Webcam", frame);
-		cvWaitKey(0);
-		i++;
-	} 
-	
+		if(cvWaitKey(0)) break;
+	}
+
+    // finished
+    cvReleaseImage(frame);
 	cvReleaseCapture(&cap);
-	cvDestroyWindow("window");*/
-	
-	VideoCapture cap(0);
+	cvDestroyWindow("window");
+
+	/*VideoCapture cap(0);
 	if(!cap.isOpened()){
 		printf("fail to open.\n");
 		return -1;
 	}
-	
+
 	Mat frame;
 	namedWindow("Webcam", 1);
 	for(;;){
@@ -39,6 +40,6 @@ int main(){
 	}
 	printf("finished.\n");
 
-	return 0;
+	return 0;*/
 
 }

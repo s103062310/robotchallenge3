@@ -16,25 +16,25 @@ int main(){
 
 	// open window and show
 	Mat frame;
-	char* filename = (char*)"#00.jpg";
+	char filename[8] = "#00.jpg";
 	int num = 0;
 	namedWindow("Webcam", 1);
 	namedWindow("Photo", 1);
 	while(true){
 		
 		cap>>frame;
-		imshow("frame", frame);
+		imshow("Webcam", frame);
 		char key = waitKey(10);
 		
 		// press enter to take a snapshot; other to close program
-		if(key==13){
+		if(key=='1'){
 			Mat photo = frame;
 			imwrite(filename, photo);
 			imshow("Photo", photo);
 			num++;
 			filename[1] = num/10 + '0';
 			filename[2] = num%10 + '0';
-		} else if(key>=0) break;
+		} else if(key==27) break;
 		
 	}
 	printf("finished.\n");

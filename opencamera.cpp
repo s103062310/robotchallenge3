@@ -21,7 +21,7 @@ int main(){
 	}
 
     // finished
-    cvReleaseImage(frame);
+    cvReleaseImage(&frame);
 	cvReleaseCapture(&cap);
 	cvDestroyWindow("window");
 

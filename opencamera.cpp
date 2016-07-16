@@ -7,39 +7,38 @@ using namespace std;
 
 int main(){
 
-	CvCapture* cap = cvCaptureFromCAM(0);;
-	IplImage* frame;
-
-	// open window
-	cvNamedWindow("Webcam", 1);
-
-    // show content of camera
-	while(true){
-		frame = cvQueryFrame(cap);
-		cvShowImage("Webcam", frame);
-		if(cvWaitKey(0)) break;
-	}
-
-    // finished
-    cvReleaseImage(&frame);
-	cvReleaseCapture(&cap);
-	cvDestroyWindow("window");
-
-	/*VideoCapture cap(0);
+	// open camera
+	VideoCapture cap(0);
 	if(!cap.isOpened()){
 		printf("fail to open.\n");
 		return -1;
 	}
 
+	// open window and show
 	Mat frame;
+	char* filename = (char*)"#00.jpg";
+	int num = 0;
 	namedWindow("Webcam", 1);
-	for(;;){
+	namedWindow("Photo", 1);
+	while(true){
+		
 		cap>>frame;
 		imshow("frame", frame);
-		if(waitKey(30)>=0) break;
+		char key = waitKey(10);
+		
+		// press enter to take a snapshot; other to close program
+		if(key==13){
+			Mat photo = frame;
+			imwrite(filename, photo);
+			imshow("Photo", photo);
+			num++;
+			filename[1] = num/10 + '0';
+			filename[2] = num%10 + '0';
+		} else if(key>=0) break;
+		
 	}
 	printf("finished.\n");
 
-	return 0;*/
+	return 0;
 
 }

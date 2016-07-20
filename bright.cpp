@@ -94,9 +94,15 @@ int main( int argc, char **argv )
 	for(int i=0; i<4; i++){
 		printf("L%d: ", i);
 		findLine(Line[i], M[i], K[i]);
-		if(i%2==0) line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[6], 1, 8 );
-		else line( dst, Point((int)((double)dst.cols*M[i]+K[i]), 0), Point((int)K[i], dst.rows), colors[6], 1, 8 );
-		printf("y = %.2fx + %.2f\n", M[i], K[i]);
+		if(i%2==0) {
+			line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[6], 1, 8 );
+			printf("y = %.2fx + %.2f\n", M[i], K[i]);
+		} else {
+			M[i] *= -1;
+			double am = dst.cols*M[i];
+			line( dst, Point((int)((double)dst.cols*M[i]+K[i]), 0), Point((int)K[i], dst.rows), colors[6], 1, 8 );
+			printf("y = %.2fx + %.2f\n", -dst.rows/am, dst.rows*(am+K[i])/am);
+		}
 	}
 	
 	// kick out and recalculate
@@ -105,9 +111,13 @@ int main( int argc, char **argv )
 		printf("L%d: ", i);
 		kickOutDataPoint(Line[i], M[i], K[i]);
 		findLine(Line[i], M[i], K[i]);
+		for(int j=0; j<Line[i].size(); j++){
+			if(i%2==0) circle(dst, Line[i][j], 2, colors[4], -1, 8, 0);
+			else circle(dst, Point(Line[i][j].y, Line[i][j].x), 2, colors[4], -1, 8, 0);
+		}
 		if(i%2==0) line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[7], 1, 8 );
 		else {
-			double am = dst.cols*M[i];
+			double am = -dst.cols*M[i];
 			M[i] = -dst.rows/am;
 			K[i] = dst.rows*(am+K[i])/am;
 			line( dst, Point((int)(((double)dst.rows-K[i])/M[i]), dst.rows), Point((int)(-K[i]/M[i]), 0), colors[7], 1, 8 );
@@ -189,12 +199,15 @@ double calSlope(vector<Point> src, double barx, double bary)
 {
 	vector<double> slope;
 	int size = src.size()/2;
-	for(int i=0; i<size; i++){
-		double nu = fabs(src[i].y - src[src.size()-size+i].y);
-		double de = fabs(src[i].x - src[src.size()-size+i].x);
-		double m = nu/de;
-		//printf("m%d = %.2f/%.2f = %.2f\n", i, nu, de, m);
-		slope.push_back(m);
+	while(size>10){
+		for(int i=0; i<size; i++){
+			double nu = src[i].y - src[src.size()-size+i].y;
+			double de = src[i].x - src[src.size()-size+i].x;
+			double m = nu/de;
+			//printf("m%d = %.2f/%.2f = %.2f\n", i, nu, de, m);
+			slope.push_back(m);
+		}
+		size /= 2;
 	}
 	double barm = calAverageDouble(slope);
 	//printf("bar of m before kick out = %.2f\n", barm);

@@ -1,11 +1,10 @@
-#include "opencv2/core/core.hpp" 
-#include "opencv2/highgui/highgui.hpp"  
-#include "opencv2/imgproc/imgproc.hpp"  
 #include <stdio.h>
 #include <math.h>
 #include <vector>
+#include "opencv2/core/core.hpp" 
+#include "opencv2/highgui/highgui.hpp"  
+#include "opencv2/imgproc/imgproc.hpp"  
 #define brightValue 70
-#define cornerValue 150
 #define kickpoint 10
 #define kickdouble 0.2
   
@@ -25,6 +24,7 @@ Scalar colors[] =
     {{255,255,255}}
 }; 
 
+void collectData(Mat src, vector<vector<Point>>& Line);
 void findLine(vector<Point>& src, double& m, double& k);
 void calAveragePoint(vector<Point> src, double& barx, double& bary);
 double calSlope(vector<Point> src, double barx, double bary);
@@ -32,7 +32,6 @@ void kickOutDataPoint(vector<Point>& src, double m, double k);
 double calAverageDouble(vector<double> src);
 void kickOutDataDouble(vector<double>& src, double bar);
 Point findPointofTwoLine(double m1, double k1, double m2, double k2);
-Mat dst;
 
 int main( int argc, char **argv )  
 {   
@@ -43,8 +42,8 @@ int main( int argc, char **argv )
 		printf("Can not load %s\n", argv[1]);
 		return -1;
 	}
-	printf("%d*%d\n", src.cols, src.rows);
-	dst = imread(argv[1], 1);
+	printf("image size: %d*%d\n", src.cols, src.rows);
+	Mat dst = imread(argv[1], 1);
 	
 	// create dark image
 	for(int y=0; y<src.rows; y++){
@@ -56,41 +55,16 @@ int main( int argc, char **argv )
 	imwrite(argv[2], src);
 	
 	// find corners - regression
-	vector<Point> Line[4];
+	vector<vector<Point>> Line;
 	double M[4], K[4];
 	Point corners[4];
-	
-	// collect data
-	for(int i=0; i<src.cols; i++){
-		for(int j=0; j<src.rows; j++){
-			if(src.at<uchar>(j, i) == 255){
-				Line[0].push_back(Point(i, j));
-				break;
-			}
-		}
-		for(int j=src.rows-1; j>=0; j--){
-			if(src.at<uchar>(j, i) == 255){
-				Line[2].push_back(Point(i, j));
-				break;
-			}
-		}
-	}
-	for(int i=0; i<src.rows; i++){
-		for(int j=0; j<src.cols; j++){
-			if(src.at<uchar>(i, j) == 255){
-				Line[3].push_back(Point(i, j));
-				break;
-			}
-		}
-		for(int j=src.cols-1; j>=0; j--){
-			if(src.at<uchar>(i, j) == 255){
-				Line[1].push_back(Point(i, j));
-				break;
-			}
-		}
+	for(int i=0; i<4; i++){
+		vector<Point> l;
+		Line.push_back(l);
 	}
 	
 	// finde line
+	collectData(src, Line);
 	printf("\nbefore:\n");
 	for(int i=0; i<4; i++){
 		printf("L%d: ", i);
@@ -228,6 +202,37 @@ Point findPointofTwoLine(double m1, double k1, double m2, double k2)
 	return Point((int)x, (int)y);
 }
 
+void collectData(Mat src, vector<vector<Point>>& Line)
+{
+	for(int i=0; i<src.cols; i++){
+		for(int j=0; j<src.rows; j++){
+			if(src.at<uchar>(j, i) == 255){
+				Line[0].push_back(Point(i, j));
+				break;
+			}
+		}
+		for(int j=src.rows-1; j>=0; j--){
+			if(src.at<uchar>(j, i) == 255){
+				Line[2].push_back(Point(i, j));
+				break;
+			}
+		}
+	}
+	for(int i=0; i<src.rows; i++){
+		for(int j=0; j<src.cols; j++){
+			if(src.at<uchar>(i, j) == 255){
+				Line[3].push_back(Point(i, j));
+				break;
+			}
+		}
+		for(int j=src.cols-1; j>=0; j--){
+			if(src.at<uchar>(i, j) == 255){
+				Line[1].push_back(Point(i, j));
+				break;
+			}
+		}
+	}
+}
 
 
 

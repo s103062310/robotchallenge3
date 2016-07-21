@@ -48,18 +48,18 @@ int main(){
 		imshow("Webcam", frame);
 		char key = waitKey(10);
 		
-		// press 1 to take a snapshot; ESC to close program
+		// press S to take a snapshot; ESC to close program
 		if(key=='S'||key=='s'){
 			Mat photo = frame;
 			imwrite(filename, photo);
 			imshow("Photo", photo);
 			num++;
 			filename[5] = num/10 + '0';
-			filename[3] = num%10 + '0';
+			filename[6] = num%10 + '0';
 		} else if(key==27) break;
 		
 	}
-	printf("finished.\n");
+	printf("\nfinished.\n");
 
 	return 0;
 

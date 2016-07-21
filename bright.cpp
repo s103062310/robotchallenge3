@@ -32,6 +32,7 @@ void kickOutDataPoint(vector<Point>& src, double m, double k);
 double calAverageDouble(vector<double> src);
 void kickOutDataDouble(vector<double>& src, double bar);
 Point findPointofTwoLine(double m1, double k1, double m2, double k2);
+Mat dst;
 
 int main( int argc, char **argv )  
 {   
@@ -42,8 +43,8 @@ int main( int argc, char **argv )
 		printf("Can not load %s\n", argv[1]);
 		return -1;
 	}
-	printf("%d*%d\n", src.cols, src.cols);
-	Mat dst = imread(argv[1], 1);
+	printf("%d*%d\n", src.cols, src.rows);
+	dst = imread(argv[1], 1);
 	
 	// create dark image
 	for(int y=0; y<src.rows; y++){
@@ -98,10 +99,13 @@ int main( int argc, char **argv )
 			line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[6], 1, 8 );
 			printf("y = %.2fx + %.2f\n", M[i], K[i]);
 		} else {
-			M[i] *= -1;
-			double am = dst.cols*M[i];
-			line( dst, Point((int)((double)dst.cols*M[i]+K[i]), 0), Point((int)K[i], dst.rows), colors[6], 1, 8 );
-			printf("y = %.2fx + %.2f\n", -dst.rows/am, dst.rows*(am+K[i])/am);
+			//printf("y = %.2fx + %.2f\n", M[i], K[i]);
+			//line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[4], 1, 8 );
+			double a = (double)dst.cols;
+			double b = (double)dst.rows;
+			double am = a*M[i];
+			line( dst, Point((int)K[i], 0), Point((int)(am+K[i]), dst.rows), colors[6], 1, 8 );
+			printf("y = %.2fx + %.2f\n", b/am, -b*K[i]/am);
 		}
 	}
 	
@@ -117,14 +121,17 @@ int main( int argc, char **argv )
 		}
 		if(i%2==0) line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[7], 1, 8 );
 		else {
-			double am = -dst.cols*M[i];
-			M[i] = -dst.rows/am;
-			K[i] = dst.rows*(am+K[i])/am;
-			line( dst, Point((int)(((double)dst.rows-K[i])/M[i]), dst.rows), Point((int)(-K[i]/M[i]), 0), colors[7], 1, 8 );
+			double a = (double)dst.cols;
+			double b = (double)dst.rows;
+			double am = a*M[i];
+			M[i] = b/am;
+			K[i] = -b*K[i]/am;
+			line( dst, Point((int)((b-K[i])/M[i]), dst.rows), Point((int)(-K[i]/M[i]), 0), colors[7], 1, 8 );
 		}
 		printf("y = %.2fx + %.2f\n", M[i], K[i]);
 	}
 	
+	// find corners
 	for(int i=0; i<4; i++){
 		printf("\nsolve %d:\n", i);
 		printf("\tL%d: y = %.2fx + %.2f\n", i, M[i], K[i]);
@@ -134,32 +141,11 @@ int main( int argc, char **argv )
 		circle(dst, corners[i], 5, colors[5], -1, 8, 0);
 	}
 	
-	// find corners - harris
-	/*Mat mid = Mat::zeros(src.size(), CV_8UC1);
-	Mat norm, scaled;
-	
-	cornerHarris(src, mid, 2, 3, 0.04, BORDER_DEFAULT);
-	normalize(mid, norm, 0, 255, NORM_MINMAX, CV_8UC1, Mat());
-	convertScaleAbs(norm, scaled);
-	
-	for(int y=0; y<norm.rows; y++){
-		for(int x=0; x<norm.cols; x++){
-			if( (int)norm.at<uchar>(y, x) > cornerValue){
-				printf("Point: (%d,%d)\n", x, y);
-				circle(dst, Point(x, y), 5, colors[0], -1, 8, 0);
-				circle(src, Point(x, y), 5, colors[0], -1, 8, 0);
-				circle(scaled, Point(x, y), 5, colors[0], -1, 8, 0);
-			}
-		}
-	}*/
-	
 	// open window and show
 	namedWindow("original", 1);
 	namedWindow("changed", 1);
-	//namedWindow("scaled", 1);
 	imshow("original", src);
 	imshow("changed", dst);
-	//imshow("scaled", scaled);
 	waitKey(0);
 	
 	return 0;
@@ -188,7 +174,8 @@ void calAveragePoint(vector<Point> src, double& barx, double& bary)
 
 void kickOutDataPoint(vector<Point>& src, double m, double k)
 {
-	for(int i=src.size()-1; i>=0; i--){
+	int size = src.size();
+	for(int i=size-1; i>=0; i--){
 		double nu = fabs(m*src[i].x - src[i].y + k);
 		double de = sqrt(m*m+1);
 		if(nu/de > kickpoint) src.erase(src.begin()+i);

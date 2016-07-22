@@ -3,7 +3,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #define numOfImage 16
-#define imageSize 40
+#define imageSize 32
 
 using namespace std;
 using namespace cv;
@@ -11,10 +11,10 @@ using namespace cv;
 void help()
 {
 	printf("\n/*------------------------------------------------------------------------\n");
-	printf(" This program is used to cut 640*640 image into 40*40 pieces.\n");
-	printf(" intput: a 640*640 image (Mat)\n");
-	printf(" output: 256 40*40 images (Mat)\n");
-	printf(" It will save result images named cutXXX.jpg in cut_result.");
+	printf(" This program is used to cut 512*512 image into 32*32 pieces.\n");
+	printf(" intput: a 512*512 image (Mat)\n");
+	printf(" output: 256 32*32 images (Mat)\n");
+	printf(" It will save result images named cutXXX.jpg in cut_result.\n");
 	printf(" usage: ./cut [original image]\n");
 	printf("------------------------------------------------------------------------*/\n\n");
 }

@@ -11,9 +11,9 @@ int convertToInt(char* str);
 void help()
 {
 	printf("\n/*------------------------------------------------------------------------\n");
-	printf(" This program is used to transform image to 640*640.\n");
+	printf(" This program is used to transform image to 512*512.\n");
 	printf(" intput: original image (Mat) and 4 corners of original image (Point [4])\n");
-	printf(" output: a 640*640 topic image (Mat)\n");
+	printf(" output: a 512*512 topic image (Mat)\n");
 	printf(" It will save a result image named topic.jpg.\n");
 	printf(" usage: ./transform [original image] [8-point] [result image]\n");
 	printf("------------------------------------------------------------------------*/\n\n");
@@ -32,10 +32,10 @@ int main( int argc, char **argv )
 	
 	// set corners - before and after
 	Point2f pts1[] = {Point2f(p[0], p[1]), Point2f(p[2], p[3]), Point2f(p[4], p[5]), Point2f(p[6], p[7])};
-	Point2f pts2[] = {Point2f(0,0), Point2f(639, 0), Point2f(639, 639), Point2f(0, 639)};
+	Point2f pts2[] = {Point2f(0,0), Point2f(511, 0), Point2f(511, 511), Point2f(0, 511)};
 	
 	// transform
-	Mat dst = Mat(640, 640, src.type());
+	Mat dst = Mat(512, 512, src.type());
 	Mat M = getPerspectiveTransform(pts1, pts2);
 	warpPerspective(src, dst, M, dst.size(), INTER_LINEAR);
 	

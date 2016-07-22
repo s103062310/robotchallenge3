@@ -4,7 +4,7 @@
 #include "opencv2/core/core.hpp" 
 #include "opencv2/highgui/highgui.hpp"  
 #include "opencv2/imgproc/imgproc.hpp"  
-#define brightValue 70
+#define brightValue 100
 #define kickpoint 10
 #define kickdouble 0.2
   
@@ -33,8 +33,21 @@ double calAverageDouble(vector<double> src);
 void kickOutDataDouble(vector<double>& src, double bar);
 Point findPointofTwoLine(double m1, double k1, double m2, double k2);
 
+void help()
+{
+	printf("\n/*---------------------------------------------------------\n");
+	printf(" This program is used to find 4 corners of topic in scene.\n");
+	printf(" intput: the photo taken by the camera (Mat)\n");
+	printf(" output: 4 corners (Point [4])\n");
+	printf(" It will save a result image named dark.jpg.\n");
+	printf(" usage: ./find4corner [original image] [result image]\n");
+	printf("---------------------------------------------------------*/\n\n");
+}
+
 int main( int argc, char **argv )  
 {   
+
+	help();
 
 	// load image
 	Mat src = imread(argv[1], 0);

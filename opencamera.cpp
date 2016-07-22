@@ -14,6 +14,7 @@ void help(){
 	printf(" 1. press 'S' to take a snapshot.\n");
 	printf(" 2. press 'ESC' to close the program.\n");
 	printf(" The photo will store in the directory named src.\n");
+	printf(" usage: ./opencamera\n");
 	printf("------------------------------------------------*/\n\n");
 }
 

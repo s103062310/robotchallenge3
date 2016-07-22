@@ -2,7 +2,8 @@
 #include <vector>
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#define THERESHOLD 50
+#define THERESHOLD 40
+
 
 using namespace std;
 
@@ -85,11 +86,10 @@ int main(int argc, char **argv)
 	img = cvLoadImage(argv[1], 1);
 	printf("width=%d, height=%d\n", img->width, img->height);
 
-	/* open window
+	//open window
 	cvNamedWindow("ORI_PICTURE", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("PICTURE", CV_WINDOW_AUTOSIZE);
 	cvShowImage("ORI_PICTURE", img);
-	*/
 
 	// when press any key: show next small image which has been cut
 	for(int i=0; i<locate_x.size()-1; i++){
@@ -98,19 +98,19 @@ int main(int argc, char **argv)
 			//printf("Now = (%d,%d) %d*%d\n", locate_x[i], locate_y[j], C, R);
 			IplImage* snapshot = cvCreateImage( cvSize(C, R), 8, 3 );
 			cvSetImageROI( img, cvRect( locate_x[i], locate_y[j], C, R ) );
-    			cvCopy( img, snapshot );
-			//cvShowImage("PICTURE", snapshot);
+    		cvCopy( img, snapshot );
+			cvShowImage("PICTURE", snapshot);
 			
 			// TODO: object detect
 			
-			//cvWaitKey(0);
+			cvWaitKey(0);
 		}
 	}
 
 	// finished
 	cvReleaseImage(&img);
-	//cvDestroyWindow("PICTURE");
-	//cvDestroyWindow("ORI_PICTURE");
+	cvDestroyWindow("PICTURE");
+	cvDestroyWindow("ORI_PICTURE");
     
     return 0;
 

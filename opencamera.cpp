@@ -13,7 +13,7 @@ void help(){
 	printf(" You can ...\n");
 	printf(" 1. press 'S' to take a snapshot.\n");
 	printf(" 2. press 'ESC' to close the program.\n");
-	printf(" The photo will store in the directory named src.\n");
+	printf(" The photo will store in the directory named photo.\n");
 	printf(" usage: ./opencamera\n");
 	printf("------------------------------------------------*/\n\n");
 }
@@ -28,7 +28,7 @@ int main(){
 	time(&local_time);
 	ptrnow = localtime(&local_time);
 	cout << asctime(ptrnow) << endl << endl;
-	system("mkdir src");
+	system("mkdir photo");
 	
 	// open camera
 	VideoCapture cap(0);

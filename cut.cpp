@@ -1,55 +1,61 @@
-#include <cstdio>
-#include <cstdlib>
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#define numOfImage 16
-#define imageSize 32
+#include "cut.h"
 
-using namespace std;
-using namespace cv;
-
-void help()
+void helpOfCut()
 {
 	printf("\n/*------------------------------------------------------------------------\n");
-	printf(" This program is used to cut 512*512 image into 32*32 pieces.\n");
-	printf(" intput: a 512*512 image (Mat)\n");
-	printf(" output: 256 32*32 images (Mat)\n");
+	printf(" This program is used to cut %d*%d image into 32*32 pieces.\n", imageSize, imageSize);
+	printf(" intput: a %d*%d image (Mat)\n", imageSize, imageSize);
+	printf(" output: %d %d*%d images (Mat)\n", numOfImage*numOfImage, outSize, outSize);
 	printf(" It will save result images named cutXXX.jpg in cut_result.\n");
 	printf(" usage: ./cut [original image]\n");
-	printf("------------------------------------------------------------------------*/\n\n");
+	printf("------------------------------------------------------------------------*/\n");
 }
 
+/*
 int main(int argc, char **argv){
 
-	help();
+	helpOfCut();
 	
 	// load image
 	Mat src = imread(argv[1], 1);
-	printf("%d*%d\n", src.cols, src.rows);
-
-	// open window
-	namedWindow("Original", 1);
-	namedWindow("Result", 1);
-	imshow("Original", src);
-
-	// when press any key: show next small image which has been cut
-	system("mkdir cut_result");
-	string filename("cut_result/cut000.jpg");
-	for(int y=0; y<numOfImage; y++){
-		for(int x=0; x<numOfImage; x++){
-			int num = y*numOfImage + x;
-			filename[16] = num%10 + '0';
-			filename[15] = num/10 % 10 + '0';
-			filename[14] = num/100 % 10 + '0';
-			//printf("Now = (%d,%d)\n", x*imageSize, y*imageSize);
-			Mat dst = Mat(src, Rect(x*imageSize, y*imageSize, imageSize, imageSize));
-			imshow("Result", dst);
-			imwrite(filename, dst);
-			//waitKey(0);
-		}
+	if(src.empty()){
+		printf("Can not load image %s.\n", argv[1]);
+		return -1;
 	}
 
-	// finished	
+	// cut
+	vector<Mat> dst = cut(src);
+	system("mkdir cut_result");
+	string filename("cut_result/cut000.jpg");
+	for(int i=0; i<dst.size(); i++){
+		filename[16] = i%10 + '0';
+		filename[15] = i/10 % 10 + '0';
+		filename[14] = i/100 % 10 + '0';
+		imwrite(filename, dst[i]);
+	}
+	
 	return 0;
 
 }
+*/
+
+vector<Mat> cut(Mat src)
+{
+
+	printf("\nStart to cut image ...\n");
+	
+	// cut
+	vector<Mat> result;
+	for(int y=0; y<numOfImage; y++){
+		for(int x=0; x<numOfImage; x++){
+			//printf("Now = (%d,%d)\n", x*outSize, y*outSize);
+			result.push_back(Mat(src, Rect(x*outSize, y*outSize, outSize, outSize)));
+		}
+	}
+	
+	return result;
+
+}
+
+
+

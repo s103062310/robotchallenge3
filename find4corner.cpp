@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <math.h>
-#include <vector>
-#include "opencv2/core/core.hpp" 
-#include "opencv2/highgui/highgui.hpp"  
-#include "opencv2/imgproc/imgproc.hpp"  
-#define brightValue 100
-#define kickpoint 10
-#define kickdouble 0.2
-  
-using namespace std;  
-using namespace cv; 
+#include "find4corner.h"
 
 Scalar colors[] =
 {
@@ -24,26 +13,21 @@ Scalar colors[] =
     {{255,255,255}}
 }; 
 
-void collectData(Mat src, vector<vector<Point>>& Line);
-void findLine(vector<Point>& src, double& m, double& k);
-void calAveragePoint(vector<Point> src, double& barx, double& bary);
-double calSlope(vector<Point> src, double barx, double bary);
-void kickOutDataPoint(vector<Point>& src, double m, double k);
-double calAverageDouble(vector<double> src);
-void kickOutDataDouble(vector<double>& src, double bar);
-Point findPointofTwoLine(double m1, double k1, double m2, double k2);
-
-void help()
+void helpOfFind4corner()
 {
-	printf("\n/*---------------------------------------------------------\n");
+	printf("\n/*------------------------------------------------------------------------\n");
 	printf(" This program is used to find 4 corners of topic in scene.\n");
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: 4 corners (Point [4])\n");
 	printf(" It will save a result image named dark.jpg.\n");
-	printf(" usage: ./find4corner [original image] [result image]\n");
-	printf("---------------------------------------------------------*/\n\n");
+	printf(" usage: ./find4corner [original] [result 1] [result 2]\n");
+	printf(" result 1: the image only have white and black.\n");
+	printf(" result 2: the image with edge points, edges, and 4 corners.\n");
+	printf(" 4-point: left-top(x,y) right-top(x,y) right-bottom(x,y) left-bottom(x,y)\n");
+	printf("------------------------------------------------------------------------*/\n");
 }
 
+/*
 int main( int argc, char **argv )  
 {   
 
@@ -51,12 +35,35 @@ int main( int argc, char **argv )
 
 	// load image
 	Mat src = imread(argv[1], 0);
-	if(!src.data){
-		printf("Can not load %s\n", argv[1]);
+	Mat dst = imread(argv[1], 1);
+	if(src.empty() || dst.empty()){
+		printf("Can not load image %s.\n", argv[1]);
 		return -1;
 	}
+	
+	// find corners
+	vector<Point> corners = find4corner(src, dst);
+	imwrite(argv[2], src);
+	imwrite(argv[3], dst);
+	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+	
+	// open window and show
+	namedWindow("Origin", 1);
+	namedWindow("Result", 1);
+	imshow("Origin", src);
+	imshow("Result", dst);
+	waitKey(0);
+	
+	return 0;
+	
+}
+*/
+
+vector<Point> find4corner(Mat& src, Mat& dst)
+{
+	
+	printf("\nStart to find 4 corner ...\n");
 	printf("image size: %d*%d\n", src.cols, src.rows);
-	Mat dst = imread(argv[1], 1);
 	
 	// create dark image
 	for(int y=0; y<src.rows; y++){
@@ -65,12 +72,11 @@ int main( int argc, char **argv )
 			else src.at<uchar>(y, x) = 255;
 		}
 	}
-	imwrite(argv[2], src);
 	
 	// find corners - regression
 	vector<vector<Point>> Line;
 	double M[4], K[4];
-	Point corners[4];
+	vector<Point> corners;
 	for(int i=0; i<4; i++){
 		vector<Point> l;
 		Line.push_back(l);
@@ -86,8 +92,6 @@ int main( int argc, char **argv )
 			line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[6], 1, 8 );
 			printf("y = %.2fx + %.2f\n", M[i], K[i]);
 		} else {
-			//printf("y = %.2fx + %.2f\n", M[i], K[i]);
-			//line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[4], 1, 8 );
 			double a = (double)dst.cols;
 			double b = (double)dst.rows;
 			double am = a*M[i];
@@ -123,21 +127,14 @@ int main( int argc, char **argv )
 		printf("\nsolve %d:\n", i);
 		printf("\tL%d: y = %.2fx + %.2f\n", i, M[i], K[i]);
 		printf("\tL%d: y = %.2fx + %.2f\n", (i+3)%4, M[(i+3)%4], K[(i+3)%4]);
-		corners[i] = findPointofTwoLine(M[i], K[i], M[(i+3)%4], K[(i+3)%4]);
-		printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+		corners.push_back(findPointofTwoLine(M[i], K[i], M[(i+3)%4], K[(i+3)%4]));
+		//printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
 		circle(dst, corners[i], 5, colors[5], -1, 8, 0);
 	}
 	
-	// open window and show
-	namedWindow("original", 1);
-	namedWindow("changed", 1);
-	imshow("original", src);
-	imshow("changed", dst);
-	waitKey(0);
+	return corners;
 	
-	return 0;
-	
-}  
+}
 
 void findLine(vector<Point>& src, double& m, double& k)
 {
@@ -246,9 +243,5 @@ void collectData(Mat src, vector<vector<Point>>& Line)
 		}
 	}
 }
-
-
-
-
 
 

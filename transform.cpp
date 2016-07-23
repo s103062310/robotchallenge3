@@ -1,53 +1,67 @@
-#include <iostream>
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"  
-#include "opencv2/imgproc/imgproc.hpp"
+#include "transform.h"
 
-using namespace cv;
-using namespace std;
-
-int convertToInt(char* str);
-
-void help()
+void helpOfTransform()
 {
 	printf("\n/*------------------------------------------------------------------------\n");
-	printf(" This program is used to transform image to 512*512.\n");
+	printf(" This program is used to transform image to %d*%d.\n", imageSize, imageSize);
 	printf(" intput: original image (Mat) and 4 corners of original image (Point [4])\n");
-	printf(" output: a 512*512 topic image (Mat)\n");
+	printf(" output: a %d*%d square image (Mat)\n", imageSize, imageSize);
 	printf(" It will save a result image named topic.jpg.\n");
-	printf(" usage: ./transform [original image] [8-point] [result image]\n");
-	printf("------------------------------------------------------------------------*/\n\n");
+	printf(" usage: ./transform [original image] [4-point] [result image]\n");
+	printf(" 4-point: left-top(x,y) right-top(x,y) right-bottom(x,y) left-bottom(x,y)\n");
+	printf(" result: a %d*%d square image\n", imageSize, imageSize);
+	printf("------------------------------------------------------------------------*/\n");
 }
 
+/*
 int main( int argc, char **argv )
 {
 
-	help();
+	helpOfTransform();
 
 	// load image	
 	Mat src = imread(argv[1], 1);
-	if(src.empty()) return -1;
-	int p[8];
-	for(int i=0; i<8; i++) p[i] = convertToInt(argv[i+2]);
+	if(src.empty()){
+		printf("Can not load image %s.\n", argv[1]);
+		return -1;
+	}
 	
-	// set corners - before and after
-	Point2f pts1[] = {Point2f(p[0], p[1]), Point2f(p[2], p[3]), Point2f(p[4], p[5]), Point2f(p[6], p[7])};
-	Point2f pts2[] = {Point2f(0,0), Point2f(511, 0), Point2f(511, 511), Point2f(0, 511)};
+	// read 4 point
+	vector<Point> p;
+	for(int i=0; i<4; i++) p.push_back(Point(convertToInt(argv[i*2+2]), convertToInt(argv[i*2+3])));
 	
 	// transform
-	Mat dst = Mat(512, 512, src.type());
+	Mat dst = transform(src, p);
+	imwrite(argv[10], dst);
+	
+	// finished
+	namedWindow("Origin", 1);
+	namedWindow("Transformed", 1);
+	imshow("Origin", src);
+	imshow("Transformed", dst);
+	waitKey(0);
+	
+	return 0;
+
+}
+*/
+
+Mat transform(Mat src, vector<Point> p)
+{
+	
+	printf("\nStart to transform to %d*%d ...\n", imageSize, imageSize);
+	
+	// set corners - before and after
+	Point2f pts1[] = {Point2f(p[0].x, p[0].y), Point2f(p[1].x, p[1].y), Point2f(p[2].x, p[2].y), Point2f(p[3].x, p[3].y)};
+	Point2f pts2[] = {Point2f(0,0), Point2f(imageSize-1, 0), Point2f(imageSize-1, imageSize-1), Point2f(0, imageSize-1)};
+	
+	// transform
+	Mat dst = Mat(imageSize, imageSize, src.type());
 	Mat M = getPerspectiveTransform(pts1, pts2);
 	warpPerspective(src, dst, M, dst.size(), INTER_LINEAR);
 	
-	// finished
-	namedWindow("Original", 1);
-	namedWindow("Warped", 1);
-	imshow("Original", src);
-	imshow("Warped", dst);
-	imwrite(argv[10], dst);
-	waitKey(0);
-	return 0;
-
+	return dst;
+	
 }
 
 int convertToInt(char* str)

@@ -1,4 +1,2 @@
-sobel.jpg
-dark.jpg
+*.o
 *~
-*executable

@@ -60,6 +60,8 @@ int main(int argc, char **argv)
 		imwrite(filename, dst[i]);
 	}
 	
+	// TODO: object detect
+	
 	// finished
 	printf("\n");
 	namedWindow("Origin", 1);

@@ -13,4 +13,7 @@
 > 1. 模式稍作調整，與辨識的接口改成vector<Mat>(32*32)
 > 2. 有放一份編譯好的code在ubuntu@192.168.0.108:Desktop/robotchallenge3
 > 3. command line: ./challenge3 resource/snapshot_1.png resource/dark_1.jpg resource/showcorner_1.jpg resource/adjust_1.jpg
-> + 整合的版本: 還沒加上camera
+> + ~~整合的版本: 還沒加上camera~~
+
+## 7/24
+> 1. 加入camera的部分

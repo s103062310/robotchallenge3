@@ -1,6 +1,7 @@
 #include <cstdio>
-#include <cstdlib>
 #include <vector>
+#include <string>
+#include <iostream>
 #include "find4corner.h"
 #include "transform.h"
 #include "cut.h" 
@@ -17,7 +18,7 @@ void help()
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: 256 32*32 images (Mat)\n");
 	printf(" It will save result images named cutXXX.jpg in cut_result.\n");
-	printf(" usage: ./challenge3 [src] [dark] [showcorner] [adjust]\n");
+	printf(" usage: ./challenge3 [src]/camera [dark] [showcorner] [adjust]\n");
 	printf(" dark: the image only have white and black.\n");
 	printf(" showcorner: the image with edge points, edges, and 4 corners.\n");
 	printf(" adjust: a 512*512 square image\n");
@@ -29,12 +30,35 @@ int main(int argc, char **argv)
 
 	help();
 	
+	// prepare
+	Mat src, dark, showcorner;
+	string str(argv[1]);
+	if(str=="camera"){
+	
+	// open camera
+	printf("Opening camera ...\n");
+	VideoCapture cap(0);
+	if(!cap.isOpened()){
+		printf("fail to open.\n");
+		return -1;
+	}
+
+	cap >> src;
+	showcorner = src;
+	cvtColor(src, dark, CV_RGB2GRAY);
+
+	} else {
+	
 	// load image
-	Mat src = imread(argv[1], 1);
-	Mat dark = imread(argv[1], 0);
-	Mat showcorner = imread(argv[1], 1);
+	printf("Image loading ...\n");
+	src = imread(argv[1], 1);
+	dark = imread(argv[1], 0);
+	showcorner = imread(argv[1], 1);
+
+	}
+	
 	if(src.empty() || dark.empty() || showcorner.empty()){
-		printf("Can not load image %s.\n", argv[1]);
+		printf("Can not load images.\n");
 		return -1;
 	}
 	
@@ -51,7 +75,6 @@ int main(int argc, char **argv)
 	
 	// cut
 	vector<Mat> dst = cut(adjust);
-	system("mkdir cut_result");
 	string filename("cut_result/cut000.jpg");
 	for(int i=0; i<dst.size(); i++){
 		filename[16] = i%10 + '0';
@@ -72,7 +95,7 @@ int main(int argc, char **argv)
 	imshow("Dark", dark);
 	imshow("Corners", showcorner);
 	imshow("Transformed", adjust);
-	waitKey(0);
+	//waitKey(0);
 	
 	return 0;
 	

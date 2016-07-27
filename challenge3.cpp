@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "brightfilter.h"
 #include "find4corner.h"
 #include "transform.h"
 #include "cut.h" 
@@ -31,40 +32,41 @@ int main(int argc, char **argv)
 	help();
 	
 	// prepare
-	Mat src, dark, showcorner;
+	Mat src;
 	string str(argv[1]);
 	if(str=="camera"){
 	
-	// open camera
-	printf("Opening camera ...\n");
-	VideoCapture cap(0);
-	if(!cap.isOpened()){
-		printf("fail to open.\n");
-		return -1;
-	}
-
-	cap >> src;
-	showcorner = src;
-	cvtColor(src, dark, CV_RGB2GRAY);
+		// open camera
+		printf("Opening camera ...\n");
+		VideoCapture cap(0);
+		if(!cap.isOpened()){
+			printf("fail to open.\n");
+			return -1;
+		}
+		cap >> src;
 
 	} else {
 	
-	// load image
-	printf("Image loading ...\n");
-	src = imread(argv[1], 1);
-	dark = imread(argv[1], 0);
-	showcorner = imread(argv[1], 1);
+		// load image
+		printf("Image loading ...\n");
+		src = imread(argv[1], 1);
 
 	}
 	
-	if(src.empty() || dark.empty() || showcorner.empty()){
+	if(src.empty()){
 		printf("Can not load images.\n");
 		return -1;
 	}
+	imwrite("src.jpg", src);
+	
+	// filter
+	Mat dark = filter(src);
+	imwrite(argv[2], dark);
 	
 	// find corners
-	vector<Point> corners = find4corner(dark, showcorner);
-	imwrite(argv[2], dark);
+	Mat mid, showcorner = src.clone();
+	find4cornerHough(dark, mid, showcorner);
+	vector<Point> corners = find4cornerRegression(dark, showcorner);
 	imwrite(argv[3], showcorner);
 	printf("\n");
 	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
@@ -87,15 +89,12 @@ int main(int argc, char **argv)
 	
 	// finished
 	printf("\n");
-	namedWindow("Origin", 1);
-	namedWindow("Dark", 1);
-	namedWindow("Corners", 1);
-	namedWindow("Transformed", 1);
 	imshow("Origin", src);
 	imshow("Dark", dark);
+	imshow("Edge", mid);
 	imshow("Corners", showcorner);
 	imshow("Transformed", adjust);
-	//waitKey(0);
+	waitKey(0);
 	
 	return 0;
 	

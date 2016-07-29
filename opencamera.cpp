@@ -32,8 +32,8 @@ int main(){
 	
 	// open camera
 	VideoCapture cap(0);
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1440);
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 	if(!cap.isOpened()){
 		printf("fail to open.\n");
 		return -1;

@@ -85,16 +85,16 @@ vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 	HoughLinesP(mid, lines, 1, CV_PI/180, 50, 50, 10 );
 	for( int i=0; i<lines.size(); i++ ) {
 		pointOfLine = classifyLine(lines, src.rows, src.cols);
-		/* print every lines
+		// print every lines
 		Vec4i l = lines[i];
 		double m = (double)(l[1]-l[3]) / (double)(l[0]-l[2]);
 		double k1 = (double)l[1] - m*(double)l[0];
 		double k2 = (double)l[3] - m*(double)l[2];
 		double k = (k1+k2) / 2;
 		//printf("lines %d: m = %.2f k1 = %.2f k2 = %.2f k = %.2f\n", i, m, k1, k2, k);
-		//line( dst, Point(0, (int)k), Point(dst.cols, (int)((double)dst.cols*m+k)), colors[i], 1, 8 );
-    	//line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i], 3, 8 );
-    	printf("L%d: y = %.2fx + %.2f\n", i, m, k);*/
+		//line( dst, Point(0, (int)k), Point(dst.cols, (int)((double)dst.cols*m+k)), colors[i], 1, 8 );*/
+    	line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i], 3, 8 );
+    	printf("L%d: y = %.2fx + %.2f\n", i, m, k);
 	}
 	
 	// print info

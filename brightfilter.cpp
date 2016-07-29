@@ -52,7 +52,7 @@ Mat filter(Mat src)
 			bright += src.at<uchar>(y, x);
 		}
 	}
-	bright /= 640*480;
+	bright /= src.cols*src.rows;
 	printf("average of bright is %d\n", bright);
 	
 	// create binary image

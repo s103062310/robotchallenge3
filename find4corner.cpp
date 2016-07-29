@@ -17,11 +17,10 @@ void helpOfFind4corner()
 {
 	printf("\n/*------------------------------------------------------------------------\n");
 	printf(" This program is used to find 4 corners of topic in scene.\n");
-	printf(" intput: the photo taken by the camera (Mat)\n");
+	printf(" intput: the photo taken by the camera (Mat) and dark image (Mat)\n");
 	printf(" output: 4 corners (Point [4])\n");
-	printf(" usage: ./find4corner [original] [result 1] [result 2]\n");
-	printf(" result 1: the image only have white and black.\n");
-	printf(" result 2: the image with edge points, edges, and 4 corners.\n");
+	printf(" usage: ./find4corner [original] [dark] [result]\n");
+	printf(" result: the image with edge points, edges, and 4 corners.\n");
 	printf(" 4-point: left-top(x,y) right-top(x,y) right-bottom(x,y) left-bottom(x,y)\n");
 	printf("------------------------------------------------------------------------*/\n");
 }
@@ -30,20 +29,31 @@ void helpOfFind4corner()
 int main( int argc, char **argv )  
 {   
 
-	help();
+	helpOfFind4corner();
 
 	// load image
 	Mat src = imread(argv[1], 0);
-	Mat dst = imread(argv[1], 1);
-	if(src.empty() || dst.empty()){
+	Mat dark = imread(argv[2], 1);
+	if(src.empty() || dark.empty()){
 		printf("Can not load image %s.\n", argv[1]);
 		return -1;
 	}
 	
-	// find corners
-	vector<Point> corners = find4corner(src, dst);
-	imwrite(argv[2], src);
-	imwrite(argv[3], dst);
+	// find 4 edges
+	Mat mid, dst = src.clone();
+	vector<Point2d> Line = findLineHough(dark, mid, dst);
+	
+	// find 4 corners
+	vector<Point> corners;
+	for(int i=0; i<4; i++){
+		printf("\nsolve %d:\n", i);
+		printf("\tL%d: y = %.2fx + %.2f\n", i, Line[i].x, Line[i].y);
+		printf("\tL%d: y = %.2fx + %.2f\n", (i+3)%4, Line[(i+3)%4].x, Line[(i+3)%4].y);
+		corners.push_back(findPointofTwoLine(Line[i].x, Line[i].y, Line[(i+3)%4].x, Line[(i+3)%4].y));
+		//printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+		circle(dst, corners[i], 5, Scalar(255,255,0), -1, 8, 0);
+	}
+	printf("\n");
 	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
 	
 	// open window and show

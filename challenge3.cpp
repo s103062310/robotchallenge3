@@ -63,13 +63,23 @@ int main(int argc, char **argv)
 	Mat dark = filter(src);
 	imwrite(argv[2], dark);
 	
-	// find corners
+	// find 4 edges
 	Mat mid, showcorner = src.clone();
-	find4cornerHough(dark, mid, showcorner);
-	vector<Point> corners = find4cornerRegression(dark, showcorner);
-	imwrite(argv[3], showcorner);
+	vector<Point2d> Line = findLineHough(dark, mid, showcorner);
+	
+	// find 4 corners
+	vector<Point> corners;
+	for(int i=0; i<4; i++){
+		printf("\nsolve %d:\n", i);
+		printf("\tL%d: y = %.2fx + %.2f\n", i, Line[i].x, Line[i].y);
+		printf("\tL%d: y = %.2fx + %.2f\n", (i+3)%4, Line[(i+3)%4].x, Line[(i+3)%4].y);
+		corners.push_back(findPointofTwoLine(Line[i].x, Line[i].y, Line[(i+3)%4].x, Line[(i+3)%4].y));
+		//printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+		circle(showcorner, corners[i], 5, Scalar(255,255,0), -1, 8, 0);
+	}
 	printf("\n");
 	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+	imwrite(argv[3], showcorner);
 	
 	// transform
 	Mat adjust = transform(src, corners);

@@ -39,6 +39,8 @@ int main(int argc, char **argv)
 		// open camera
 		printf("Opening camera ...\n");
 		VideoCapture cap(0);
+		cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+		cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1440);
 		if(!cap.isOpened()){
 			printf("fail to open.\n");
 			return -1;

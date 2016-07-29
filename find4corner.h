@@ -14,8 +14,10 @@
 using namespace std;  
 using namespace cv;
 
-vector<Point> find4corner(Mat& src, Mat& dst);
-void collectData(Mat src, vector<vector<Point>>& Line);
+vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst);
+Point2d findLineRegression(Mat src, Mat& dst, int dir);
+vector<vector<Vec4i>> classifyLine(vector<Vec4i> lines, int r, int c);
+vector<Point> collectData(Mat src, int dir);
 void findLine(vector<Point>& src, double& m, double& k);
 void calAveragePoint(vector<Point> src, double& barx, double& bary);
 double calSlope(vector<Point> src, double barx, double bary);

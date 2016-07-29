@@ -6,11 +6,11 @@ Scalar colors[] =
     {{0,128,255}},		// orange
     {{0,255,255}},		// yellow
     {{0,255,0}},		// green
-    {{255,128,0}},
-    {{255,255,0}},
+    {{255,128,0}},		// light blue
+    {{255,255,0}},		// cyan
     {{255,0,0}},		// blue
     {{255,0,255}},		// purple
-    {{255,255,255}}
+    {{255,255,255}}		// white
 }; 
 
 void helpOfFind4corner()
@@ -19,7 +19,6 @@ void helpOfFind4corner()
 	printf(" This program is used to find 4 corners of topic in scene.\n");
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: 4 corners (Point [4])\n");
-	printf(" It will save a result image named dark.jpg.\n");
 	printf(" usage: ./find4corner [original] [result 1] [result 2]\n");
 	printf(" result 1: the image only have white and black.\n");
 	printf(" result 2: the image with edge points, edges, and 4 corners.\n");
@@ -59,85 +58,147 @@ int main( int argc, char **argv )
 }
 */
 
-vector<Point> find4corner(Mat& src, Mat& dst)
+vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 {
 	
-	printf("\nStart to find 4 corner ...\n");
+	printf("\nStart to find lines used hough ...\n");
 	printf("image size: %d*%d\n", src.cols, src.rows);
 	
-	// create dark image
-	for(int y=0; y<src.rows; y++){
-		for(int x=0; x<src.cols; x++){
-			if(src.at<uchar>(y, x) <= brightValue) src.at<uchar>(y, x) = 0;
-			else src.at<uchar>(y, x) = 255;
-		}
+	// find corners - hough
+	vector<vector<Vec4i>> pointOfLine;
+	vector<Vec4i> lines;
+	vector<Point2d> Line;
+	for(int i=0; i<4; i++) Line.push_back(Point2d(0, 0));
+	
+	// find lines and classify
+	Canny(src, mid, 50, 200, 3);
+	HoughLinesP(mid, lines, 1, CV_PI/180, 50, 50, 10 );
+	for( int i=0; i<lines.size(); i++ ) {
+		pointOfLine = classifyLine(lines, src.rows, src.cols);
+		/* print every lines
+		Vec4i l = lines[i];
+		double m = (double)(l[1]-l[3]) / (double)(l[0]-l[2]);
+		double k1 = (double)l[1] - m*(double)l[0];
+		double k2 = (double)l[3] - m*(double)l[2];
+		double k = (k1+k2) / 2;
+		//printf("lines %d: m = %.2f k1 = %.2f k2 = %.2f k = %.2f\n", i, m, k1, k2, k);
+		//line( dst, Point(0, (int)k), Point(dst.cols, (int)((double)dst.cols*m+k)), colors[i], 1, 8 );
+    	//line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i], 3, 8 );
+    	printf("L%d: y = %.2fx + %.2f\n", i, m, k);*/
 	}
 	
-	// find corners - regression
-	vector<vector<Point>> Line;
-	double M[4], K[4];
-	vector<Point> corners;
+	// print info
+	/*for(int i=0; i<4; i++){
+		printf("L%d:\n", i);
+		for(int j=0; j<pointOfLine[i].size(); j++){
+			printf("(%d,%d) ", pointOfLine[i][j][0], pointOfLine[i][j][1]);
+			printf("(%d,%d) ", pointOfLine[i][j][2], pointOfLine[i][j][3]);
+		}
+		printf("\n");
+	}*/
+	
+	// find 4 edges
 	for(int i=0; i<4; i++){
-		vector<Point> l;
+		if(pointOfLine[i].size()<=0){
+			Line[i] = findLineRegression(src, dst, i);
+		} else {
+			for(int j=0; j<pointOfLine[i].size(); j++){
+				double m = (double)(pointOfLine[i][j][1]-pointOfLine[i][j][3]) / (double)(pointOfLine[i][j][0]-pointOfLine[i][j][2]);
+				double k1 = (double)pointOfLine[i][j][1] - m*(double)pointOfLine[i][j][0];
+				double k2 = (double)pointOfLine[i][j][3] - m*(double)pointOfLine[i][j][2];
+				Line[i].x += m;
+				Line[i].y += (k1+k2);
+			}
+			Line[i].x /= pointOfLine[i].size();
+			Line[i].y /= (pointOfLine[i].size()*2);
+		}
+		line( dst, Point(0, (int)Line[i].y), Point(dst.cols, (int)((double)dst.cols*Line[i].x+Line[i].y)), colors[5], 1, 8 );
+		printf("L%d: y = %.2fx + %.2f\n", i, Line[i].x, Line[i].y);
+	}
+	
+	return Line;
+	
+}
+
+Point2d findLineRegression(Mat src, Mat& dst, int dir)
+{
+	
+	//printf("\nStart to find line used regression ...\n");
+	//printf("image size: %d*%d\n", src.cols, src.rows);
+	
+	// find corners - regression
+	vector<Point> pointOfLine;
+	Point2d Line = Point2d(0, 0);
+
+	// finde line
+	pointOfLine = collectData(src, dir);
+	findLine(pointOfLine, Line.x, Line.y);
+	/*printf("\nbefore:\n");
+	if(dir%2==0) {
+		line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[6], 1, 8 );
+		printf("y = %.2fx + %.2f\n", Line.x, Line.y);
+	} else {
+		double a = (double)dst.cols;
+		double b = (double)dst.rows;
+		double am = a*Line.x;
+		line( dst, Point((int)Line.y, 0), Point((int)(am+Line.y), dst.rows), colors[6], 1, 8 );
+		printf("y = %.2fx + %.2f\n", b/am, -b*Line.y/am);
+	}*/
+	
+	// kick out and recalculate
+	kickOutDataPoint(pointOfLine, Line.x, Line.y);
+	findLine(pointOfLine, Line.x, Line.y);
+	/*printf("\nafter:\n");
+	for(int j=0; j<Line.size(); j++){
+		if(i%2==0) circle(dst, Line[j], 2, colors[4], -1, 8, 0);
+		else circle(dst, Point(Line[j].y, Line[j].x), 2, colors[4], -1, 8, 0);
+	}*/
+	if(dir%2==0){
+		//line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[7], 1, 8 );
+	} else {
+		double a = (double)dst.cols;
+		double b = (double)dst.rows;
+		double am = a*Line.x;
+		Line.x = b/am;
+		Line.y = -b*Line.y/am;
+		//line( dst, Point((int)((b-Line.y)/Line.x), dst.rows), Point((int)(-Line.y/Line.x), 0), colors[7], 1, 8 );
+	}
+	//printf("y = %.2fx + %.2f\n", Line.x, Line.y);
+	
+	return Line;
+	
+}
+
+vector<vector<Vec4i>> classifyLine(vector<Vec4i> lines, int r, int c)
+{
+	
+	vector<vector<Vec4i>> Line;
+	for(int i=0; i<4; i++){
+		vector<Vec4i> l;
 		Line.push_back(l);
 	}
 	
-	// finde line
-	collectData(src, Line);
-	printf("\nbefore:\n");
-	for(int i=0; i<4; i++){
-		printf("L%d: ", i);
-		findLine(Line[i], M[i], K[i]);
-		if(i%2==0) {
-			line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[6], 1, 8 );
-			printf("y = %.2fx + %.2f\n", M[i], K[i]);
+	for(int i=0; i<lines.size(); i++){
+		double m = (double)(lines[i][1]-lines[i][3]) / (double)(lines[i][0]-lines[i][2]);
+		//printf("m[%d] = %.2f\n", i, m);
+		int dir;
+		if(fabs(m)<0.2){
+			if(lines[i][1]<r/2) dir = 0;
+			else dir = 2;
 		} else {
-			double a = (double)dst.cols;
-			double b = (double)dst.rows;
-			double am = a*M[i];
-			line( dst, Point((int)K[i], 0), Point((int)(am+K[i]), dst.rows), colors[6], 1, 8 );
-			printf("y = %.2fx + %.2f\n", b/am, -b*K[i]/am);
+			if(lines[i][0]<c/2) dir = 3;
+			else dir = 1;
 		}
+		Line[dir].push_back(lines[i]);
 	}
 	
-	// kick out and recalculate
-	printf("\nafter:\n");
-	for(int i=0; i<4; i++){
-		printf("L%d: ", i);
-		kickOutDataPoint(Line[i], M[i], K[i]);
-		findLine(Line[i], M[i], K[i]);
-		for(int j=0; j<Line[i].size(); j++){
-			if(i%2==0) circle(dst, Line[i][j], 2, colors[4], -1, 8, 0);
-			else circle(dst, Point(Line[i][j].y, Line[i][j].x), 2, colors[4], -1, 8, 0);
-		}
-		if(i%2==0) line( dst, Point(0, (int)K[i]), Point(dst.cols, (int)((double)dst.cols*M[i]+K[i])), colors[7], 1, 8 );
-		else {
-			double a = (double)dst.cols;
-			double b = (double)dst.rows;
-			double am = a*M[i];
-			M[i] = b/am;
-			K[i] = -b*K[i]/am;
-			line( dst, Point((int)((b-K[i])/M[i]), dst.rows), Point((int)(-K[i]/M[i]), 0), colors[7], 1, 8 );
-		}
-		printf("y = %.2fx + %.2f\n", M[i], K[i]);
-	}
-	
-	// find corners
-	for(int i=0; i<4; i++){
-		printf("\nsolve %d:\n", i);
-		printf("\tL%d: y = %.2fx + %.2f\n", i, M[i], K[i]);
-		printf("\tL%d: y = %.2fx + %.2f\n", (i+3)%4, M[(i+3)%4], K[(i+3)%4]);
-		corners.push_back(findPointofTwoLine(M[i], K[i], M[(i+3)%4], K[(i+3)%4]));
-		//printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
-		circle(dst, corners[i], 5, colors[5], -1, 8, 0);
-	}
-	
-	return corners;
+	return Line;
 	
 }
 
 void findLine(vector<Point>& src, double& m, double& k)
 {
+	if(src.size()<=0) return;
 	double Ux, Uy;
 	calAveragePoint(src, Ux, Uy);
 	m = calSlope(src, Ux, Uy);
@@ -170,7 +231,7 @@ double calSlope(vector<Point> src, double barx, double bary)
 {
 	vector<double> slope;
 	int size = src.size()/2;
-	while(size>10){
+	while(size>0){
 		for(int i=0; i<size; i++){
 			double nu = src[i].y - src[src.size()-size+i].y;
 			double de = src[i].x - src[src.size()-size+i].x;
@@ -212,36 +273,49 @@ Point findPointofTwoLine(double m1, double k1, double m2, double k2)
 	return Point((int)x, (int)y);
 }
 
-void collectData(Mat src, vector<vector<Point>>& Line)
+vector<Point> collectData(Mat src, int dir)
 {
-	for(int i=0; i<src.cols; i++){
-		for(int j=0; j<src.rows; j++){
-			if(src.at<uchar>(j, i) == 255){
-				Line[0].push_back(Point(i, j));
-				break;
+	vector<Point> Line;
+	
+	if(dir==0){
+		for(int i=0; i<src.cols; i++){
+			for(int j=0; j<src.rows; j++){
+				if(src.at<uchar>(j, i) == 255){
+					Line.push_back(Point(i, j));
+					break;
+				}
 			}
 		}
-		for(int j=src.rows-1; j>=0; j--){
-			if(src.at<uchar>(j, i) == 255){
-				Line[2].push_back(Point(i, j));
-				break;
+	} else if(dir==1){
+		for(int i=0; i<src.rows; i++){
+			for(int j=src.cols-1; j>=0; j--){
+				if(src.at<uchar>(i, j) == 255){
+					Line.push_back(Point(i, j));
+					break;
+				}
+			}
+		}
+	} else if(dir==2){
+		for(int i=0; i<src.cols; i++){
+			for(int j=src.rows-1; j>=0; j--){
+				if(src.at<uchar>(j, i) == 255){
+					Line.push_back(Point(i, j));
+					break;
+				}
+			}
+		}
+	} else if(dir==3){
+		for(int i=0; i<src.rows; i++){
+			for(int j=0; j<src.cols; j++){
+				if(src.at<uchar>(i, j) == 255){
+					Line.push_back(Point(i, j));
+					break;
+				}
 			}
 		}
 	}
-	for(int i=0; i<src.rows; i++){
-		for(int j=0; j<src.cols; j++){
-			if(src.at<uchar>(i, j) == 255){
-				Line[3].push_back(Point(i, j));
-				break;
-			}
-		}
-		for(int j=src.cols-1; j>=0; j--){
-			if(src.at<uchar>(i, j) == 255){
-				Line[1].push_back(Point(i, j));
-				break;
-			}
-		}
-	}
+	
+	return Line;
 }
 
 

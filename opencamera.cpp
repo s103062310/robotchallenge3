@@ -32,6 +32,8 @@ int main(){
 	
 	// open camera
 	VideoCapture cap(0);
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1440);
 	if(!cap.isOpened()){
 		printf("fail to open.\n");
 		return -1;
@@ -39,7 +41,7 @@ int main(){
 
 	// open window and show
 	Mat frame;
-	char filename[12] = "src/#00.jpg";
+	char filename[15] = "photo/#00.jpg";
 	int num = 0;
 	namedWindow("Webcam", 1);
 	namedWindow("Photo", 1);
@@ -55,8 +57,8 @@ int main(){
 			imwrite(filename, photo);
 			imshow("Photo", photo);
 			num++;
-			filename[5] = num/10 + '0';
-			filename[6] = num%10 + '0';
+			filename[7] = num/10 + '0';
+			filename[8] = num%10 + '0';
 		} else if(key==27) break;
 		
 	}

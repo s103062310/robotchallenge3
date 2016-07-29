@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "brightfilter.h"
 #include "find4corner.h"
 #include "transform.h"
 #include "cut.h" 
@@ -31,43 +32,54 @@ int main(int argc, char **argv)
 	help();
 	
 	// prepare
-	Mat src, dark, showcorner;
+	Mat src;
 	string str(argv[1]);
 	if(str=="camera"){
 	
-	// open camera
-	printf("Opening camera ...\n");
-	VideoCapture cap(0);
-	if(!cap.isOpened()){
-		printf("fail to open.\n");
-		return -1;
-	}
-
-	cap >> src;
-	showcorner = src;
-	cvtColor(src, dark, CV_RGB2GRAY);
+		// open camera
+		printf("Opening camera ...\n");
+		VideoCapture cap(0);
+		if(!cap.isOpened()){
+			printf("fail to open.\n");
+			return -1;
+		}
+		cap >> src;
 
 	} else {
 	
-	// load image
-	printf("Image loading ...\n");
-	src = imread(argv[1], 1);
-	dark = imread(argv[1], 0);
-	showcorner = imread(argv[1], 1);
+		// load image
+		printf("Image loading ...\n");
+		src = imread(argv[1], 1);
 
 	}
 	
-	if(src.empty() || dark.empty() || showcorner.empty()){
+	if(src.empty()){
 		printf("Can not load images.\n");
 		return -1;
 	}
+	imwrite("src.jpg", src);
 	
-	// find corners
-	vector<Point> corners = find4corner(dark, showcorner);
+	// filter
+	Mat dark = filter(src);
 	imwrite(argv[2], dark);
-	imwrite(argv[3], showcorner);
+	
+	// find 4 edges
+	Mat mid, showcorner = src.clone();
+	vector<Point2d> Line = findLineHough(dark, mid, showcorner);
+	
+	// find 4 corners
+	vector<Point> corners;
+	for(int i=0; i<4; i++){
+		printf("\nsolve %d:\n", i);
+		printf("\tL%d: y = %.2fx + %.2f\n", i, Line[i].x, Line[i].y);
+		printf("\tL%d: y = %.2fx + %.2f\n", (i+3)%4, Line[(i+3)%4].x, Line[(i+3)%4].y);
+		corners.push_back(findPointofTwoLine(Line[i].x, Line[i].y, Line[(i+3)%4].x, Line[(i+3)%4].y));
+		//printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+		circle(showcorner, corners[i], 5, Scalar(255,255,0), -1, 8, 0);
+	}
 	printf("\n");
 	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+	imwrite(argv[3], showcorner);
 	
 	// transform
 	Mat adjust = transform(src, corners);
@@ -87,15 +99,12 @@ int main(int argc, char **argv)
 	
 	// finished
 	printf("\n");
-	namedWindow("Origin", 1);
-	namedWindow("Dark", 1);
-	namedWindow("Corners", 1);
-	namedWindow("Transformed", 1);
 	imshow("Origin", src);
 	imshow("Dark", dark);
+	imshow("Edge", mid);
 	imshow("Corners", showcorner);
 	imshow("Transformed", adjust);
-	//waitKey(0);
+	waitKey(0);
 	
 	return 0;
 	

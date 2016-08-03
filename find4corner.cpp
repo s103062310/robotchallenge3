@@ -1,4 +1,6 @@
 #include "find4corner.h"
+#define kickpoint 10
+#define kickdouble 0.2
 
 Scalar colors[] =
 {
@@ -25,15 +27,15 @@ void helpOfFind4corner()
 	printf("------------------------------------------------------------------------*/\n");
 }
 
-/*
+
 int main( int argc, char **argv )  
 {   
 
 	helpOfFind4corner();
 
 	// load image
-	Mat src = imread(argv[1], 0);
-	Mat dark = imread(argv[2], 1);
+	Mat src = imread(argv[1], 1);
+	Mat dark = imread(argv[2], 0);
 	if(src.empty() || dark.empty()){
 		printf("Can not load image %s.\n", argv[1]);
 		return -1;
@@ -57,16 +59,15 @@ int main( int argc, char **argv )
 	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
 	
 	// open window and show
-	namedWindow("Origin", 1);
-	namedWindow("Result", 1);
 	imshow("Origin", src);
 	imshow("Result", dst);
+	imshow("Edge", mid);
 	waitKey(0);
 	
 	return 0;
 	
 }
-*/
+
 
 vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 {

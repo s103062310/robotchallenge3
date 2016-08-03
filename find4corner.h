@@ -7,9 +7,6 @@
 #include "opencv2/core/core.hpp" 
 #include "opencv2/highgui/highgui.hpp"  
 #include "opencv2/imgproc/imgproc.hpp"
-#define brightValue 100
-#define kickpoint 10
-#define kickdouble 0.2
 
 using namespace std;  
 using namespace cv;

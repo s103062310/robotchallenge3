@@ -12,8 +12,7 @@ void helpOfBrightfilter()
 	printf("---------------------------------------------------*/\n");
 }
 
-
-
+/*
 int main(int argc, char **argv)
 {
 
@@ -37,7 +36,7 @@ int main(int argc, char **argv)
 	return 0;
 
 }
-
+*/
 
 Mat filterByAverageBright(Mat src)
 {
@@ -103,7 +102,7 @@ Mat filterByRightEdge(Mat src)
 	}
 	
 	// obvious
-	line(src, Point((int)(src.cols*0.95), 0), Point((int)(src.cols*0.95), src.rows), Scalar(0, 0, 255), 3, 8);
+	//line(src, Point((int)(src.cols*0.95), 0), Point((int)(src.cols*0.95), src.rows), Scalar(0, 0, 255), 3, 8);
 	
 	return dst;	
 	

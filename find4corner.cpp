@@ -27,7 +27,7 @@ void helpOfFind4corner()
 	printf("------------------------------------------------------------------------*/\n");
 }
 
-
+/*
 int main( int argc, char **argv )  
 {   
 
@@ -67,7 +67,7 @@ int main( int argc, char **argv )
 	return 0;
 	
 }
-
+*/
 
 vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 {
@@ -84,31 +84,23 @@ vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 	// find lines and classify
 	Canny(src, mid, 50, 200, 3);
 	HoughLinesP(mid, lines, 1, CV_PI/180, 50, 50, 10 );
-	for( int i=0; i<lines.size(); i++ ) {
-		pointOfLine = classifyLine(lines, src.rows, src.cols);
-		// print every lines
-		Vec4i l = lines[i];
-		double m = (double)(l[1]-l[3]) / (double)(l[0]-l[2]);
-		double k1 = (double)l[1] - m*(double)l[0];
-		double k2 = (double)l[3] - m*(double)l[2];
-		double k = (k1+k2) / 2;
-		//printf("lines %d: m = %.2f k1 = %.2f k2 = %.2f k = %.2f\n", i, m, k1, k2, k);
-		//line( dst, Point(0, (int)k), Point(dst.cols, (int)((double)dst.cols*m+k)), colors[i], 1, 8 );*/
-    	line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i], 3, 8 );
-    	printf("L%d: y = %.2fx + %.2f\n", i, m, k);
+	printf("Result of hough transform:\n");
+	pointOfLine = classifyLine(lines, src.rows, src.cols);
+	for( int i=0; i<4; i++ ) {
+		for(int j=0; j<pointOfLine[i].size(); j++){
+			// print every lines
+			Vec4i l = pointOfLine[i][j];
+			double m = (double)(l[1]-l[3]) / (double)(l[0]-l[2]);
+			double k1 = (double)l[1] - m*(double)l[0];
+			double k2 = (double)l[3] - m*(double)l[2];
+			double k = (k1+k2) / 2;
+			line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i], 3, 8 );
+			printf("L%d: y = %.2fx + %.2f\n", i, m, k);
+    	}
 	}
 	
-	// print info
-	/*for(int i=0; i<4; i++){
-		printf("L%d:\n", i);
-		for(int j=0; j<pointOfLine[i].size(); j++){
-			printf("(%d,%d) ", pointOfLine[i][j][0], pointOfLine[i][j][1]);
-			printf("(%d,%d) ", pointOfLine[i][j][2], pointOfLine[i][j][3]);
-		}
-		printf("\n");
-	}*/
-	
 	// find 4 edges
+	printf("Result of 4 edges:\n");
 	for(int i=0; i<4; i++){
 		if(pointOfLine[i].size()<=0){
 			Line[i] = findLineRegression(src, dst, i);
@@ -134,8 +126,8 @@ vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 Point2d findLineRegression(Mat src, Mat& dst, int dir)
 {
 	
-	//printf("\nStart to find line used regression ...\n");
-	//printf("image size: %d*%d\n", src.cols, src.rows);
+	printf("\nStart to find line used regression ...\n");
+	printf("image size: %d*%d\n", src.cols, src.rows);
 	
 	// find corners - regression
 	vector<Point> pointOfLine;
@@ -144,7 +136,7 @@ Point2d findLineRegression(Mat src, Mat& dst, int dir)
 	// finde line
 	pointOfLine = collectData(src, dir);
 	findLine(pointOfLine, Line.x, Line.y);
-	/*printf("\nbefore:\n");
+	printf("before:\n");
 	if(dir%2==0) {
 		line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[6], 1, 8 );
 		printf("y = %.2fx + %.2f\n", Line.x, Line.y);
@@ -154,27 +146,27 @@ Point2d findLineRegression(Mat src, Mat& dst, int dir)
 		double am = a*Line.x;
 		line( dst, Point((int)Line.y, 0), Point((int)(am+Line.y), dst.rows), colors[6], 1, 8 );
 		printf("y = %.2fx + %.2f\n", b/am, -b*Line.y/am);
-	}*/
+	}
 	
 	// kick out and recalculate
 	kickOutDataPoint(pointOfLine, Line.x, Line.y);
 	findLine(pointOfLine, Line.x, Line.y);
-	/*printf("\nafter:\n");
-	for(int j=0; j<Line.size(); j++){
+	printf("after:\n");
+	/*for(int j=0; j<Line.size(); j++){
 		if(i%2==0) circle(dst, Line[j], 2, colors[4], -1, 8, 0);
 		else circle(dst, Point(Line[j].y, Line[j].x), 2, colors[4], -1, 8, 0);
 	}*/
 	if(dir%2==0){
-		//line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[7], 1, 8 );
+		line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[7], 1, 8 );
 	} else {
 		double a = (double)dst.cols;
 		double b = (double)dst.rows;
 		double am = a*Line.x;
 		Line.x = b/am;
 		Line.y = -b*Line.y/am;
-		//line( dst, Point((int)((b-Line.y)/Line.x), dst.rows), Point((int)(-Line.y/Line.x), 0), colors[7], 1, 8 );
+		line( dst, Point((int)((b-Line.y)/Line.x), dst.rows), Point((int)(-Line.y/Line.x), 0), colors[7], 1, 8 );
 	}
-	//printf("y = %.2fx + %.2f\n", Line.x, Line.y);
+	printf("y = %.2fx + %.2f\n", Line.x, Line.y);
 	
 	return Line;
 	
@@ -192,6 +184,7 @@ vector<vector<Vec4i>> classifyLine(vector<Vec4i> lines, int r, int c)
 	for(int i=0; i<lines.size(); i++){
 		double m = (double)(lines[i][1]-lines[i][3]) / (double)(lines[i][0]-lines[i][2]);
 		//printf("m[%d] = %.2f\n", i, m);
+		if(isfinite(m)==0) continue;
 		int dir;
 		if(fabs(m)<0.2){
 			if(lines[i][1]<r/2) dir = 0;

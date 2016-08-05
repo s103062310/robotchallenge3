@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
 	imwrite("src.jpg", src);
 	
 	// filter
-	Mat dark = filter(src);
+	Mat dark = filterByRightEdge(src);
 	imwrite(argv[2], dark);
 	
 	// find 4 edges
@@ -91,6 +92,7 @@ int main(int argc, char **argv)
 	
 	// cut
 	vector<Mat> dst = cut(adjust);
+	system("mkdir cut_result");
 	string filename("cut_result/cut000.jpg");
 	for(int i=0; i<dst.size(); i++){
 		filename[16] = i%10 + '0';

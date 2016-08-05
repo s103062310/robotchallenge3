@@ -1,4 +1,7 @@
 #include "cut.h"
+#define imageSize 512
+#define numOfImage 16
+#define outSize 32
 
 void helpOfCut()
 {

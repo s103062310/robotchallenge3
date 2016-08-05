@@ -1,4 +1,5 @@
 #include "transform.h"
+#define imageSize 512
 
 void helpOfTransform()
 {

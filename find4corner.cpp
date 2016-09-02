@@ -1,6 +1,9 @@
 #include "find4corner.h"
-#define kickpoint 10
-#define kickdouble 0.2
+#define kickpoint 300
+#define kickdouble 0.005
+#define threshold 40
+#define WIDTH 2304
+#define HEIGHT 1536
 
 Scalar colors[] =
 {
@@ -28,7 +31,7 @@ void helpOfFind4corner()
 }
 
 /*
-int main( int argc, char **argv )  
+int main( int argc, char **argv )
 {   
 
 	helpOfFind4corner();
@@ -41,9 +44,27 @@ int main( int argc, char **argv )
 		return -1;
 	}
 	
-	// find 4 edges
+	// find 4 corners - harris
+	/*Mat dst, dst_norm;
+	cornerHarris(dark, dst, 2, 3, 0.04, BORDER_DEFAULT);
+	normalize(dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
+	for(int j=0; j<dst_norm.rows; j++){
+		for(int i=0; i<dst_norm.cols; i++){
+			if((int)dst_norm.at<float>(j, i)>threshold){
+				circle(src, Point(i, j), 5, colors[0], -1, 8, 0);
+			}
+		}
+	}
+	
+	// find 4 edges - hough
 	Mat mid, dst = src.clone();
 	vector<Point2d> Line = findLineHough(dark, mid, dst);
+	
+	// find 4 edges - regression
+	/*vector<Point2d> Line;
+	for(int i=0; i<4; i++){
+		Line.push_back(findLineRegression(dark, dst, i));
+	}
 	
 	// find 4 corners
 	vector<Point> corners;
@@ -56,12 +77,12 @@ int main( int argc, char **argv )
 		circle(dst, corners[i], 5, Scalar(255,255,0), -1, 8, 0);
 	}
 	printf("\n");
-	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
+	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);	
 	
 	// open window and show
 	imshow("Origin", src);
 	imshow("Result", dst);
-	imshow("Edge", mid);
+	imwrite(argv[3], dst);
 	waitKey(0);
 	
 	return 0;
@@ -84,7 +105,7 @@ vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 	// find lines and classify
 	Canny(src, mid, 50, 200, 3);
 	HoughLinesP(mid, lines, 1, CV_PI/180, 50, 50, 10 );
-	printf("Result of hough transform:\n");
+	printf("Result of hough transform: %d\n", (int)lines.size());
 	pointOfLine = classifyLine(lines, src.rows, src.cols);
 	for( int i=0; i<4; i++ ) {
 		for(int j=0; j<pointOfLine[i].size(); j++){
@@ -94,7 +115,7 @@ vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 			double k1 = (double)l[1] - m*(double)l[0];
 			double k2 = (double)l[3] - m*(double)l[2];
 			double k = (k1+k2) / 2;
-			line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i], 3, 8 );
+			line( dst, Point(l[0], l[1]), Point(l[2], l[3]), colors[i%9], 5, 8 );
 			printf("L%d: y = %.2fx + %.2f\n", i, m, k);
     	}
 	}
@@ -115,7 +136,8 @@ vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst)
 			Line[i].x /= pointOfLine[i].size();
 			Line[i].y /= (pointOfLine[i].size()*2);
 		}
-		line( dst, Point(0, (int)Line[i].y), Point(dst.cols, (int)((double)dst.cols*Line[i].x+Line[i].y)), colors[5], 1, 8 );
+		if(i%2==0) line( dst, Point(0, (int)Line[i].y), Point(dst.cols, (int)((double)dst.cols*Line[i].x+Line[i].y)), colors[5], 1, 8 );
+		else line( dst, Point((int)(-Line[i].y/Line[i].x), 0), Point((int)(((double)dst.rows-Line[i].y)/Line[i].x), dst.rows), colors[5], 1, 8 );
 		printf("L%d: y = %.2fx + %.2f\n", i, Line[i].x, Line[i].y);
 	}
 	
@@ -138,7 +160,7 @@ Point2d findLineRegression(Mat src, Mat& dst, int dir)
 	findLine(pointOfLine, Line.x, Line.y);
 	printf("before:\n");
 	if(dir%2==0) {
-		line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[6], 1, 8 );
+		line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[4], 1, 8 );
 		printf("y = %.2fx + %.2f\n", Line.x, Line.y);
 	} else {
 		double a = (double)dst.cols;
@@ -152,10 +174,11 @@ Point2d findLineRegression(Mat src, Mat& dst, int dir)
 	kickOutDataPoint(pointOfLine, Line.x, Line.y);
 	findLine(pointOfLine, Line.x, Line.y);
 	printf("after:\n");
-	/*for(int j=0; j<Line.size(); j++){
-		if(i%2==0) circle(dst, Line[j], 2, colors[4], -1, 8, 0);
-		else circle(dst, Point(Line[j].y, Line[j].x), 2, colors[4], -1, 8, 0);
-	}*/
+	printf("data point: %d\n", (int)pointOfLine.size());
+	for(int j=0; j<pointOfLine.size(); j++){
+		if(dir%2==0) circle(dst, pointOfLine[j], 2, colors[0], -1, 8, 0);
+		else circle(dst, Point(pointOfLine[j].y, pointOfLine[j].x), 2, colors[2], -1, 8, 0);
+	}
 	if(dir%2==0){
 		line( dst, Point(0, (int)Line.y), Point(dst.cols, (int)((double)dst.cols*Line.x+Line.y)), colors[7], 1, 8 );
 	} else {
@@ -181,6 +204,7 @@ vector<vector<Vec4i>> classifyLine(vector<Vec4i> lines, int r, int c)
 		Line.push_back(l);
 	}
 	
+	// classify
 	for(int i=0; i<lines.size(); i++){
 		double m = (double)(lines[i][1]-lines[i][3]) / (double)(lines[i][0]-lines[i][2]);
 		//printf("m[%d] = %.2f\n", i, m);
@@ -196,8 +220,69 @@ vector<vector<Vec4i>> classifyLine(vector<Vec4i> lines, int r, int c)
 		Line[dir].push_back(lines[i]);
 	}
 	
+	// establish table
+	int table[WIDTH/10];
+	vector<int> max;
+	for(int i=0; i<4; i++){
+		for(int j=0; j<WIDTH/10; j++) table[j] = 0;
+		for(int j=0; j<Line[i].size(); j++){
+			if(i%2){
+				table[Line[i][j][0]/10]++;
+				table[Line[i][j][2]/10]++;
+			} else {
+				table[Line[i][j][1]/10]++;
+				table[Line[i][j][3]/10]++;
+			}
+		}
+		max.push_back(find_max(table, i));
+		//printf("max[%d] = %d\n", i, max[i]);	
+	}
+	
+	// kick according table
+	double kickline_x = (max[1]-max[3])/16;
+	double kickline_y = (max[2]-max[0])/16;
+	//printf("x: %.2f y: %.2f\n", kickline_x, kickline_y);
+	for(int i=0; i<4; i++){
+		if(i%2){
+			for(int j=Line[i].size()-1; j>=0; j--){
+				//printf("Line[%d][%d][0] = %d\n", i, j, Line[i][j][0]);
+				if(fabs(Line[i][j][0]-max[i]) > kickline_x)
+					Line[i].erase(Line[i].begin()+j);
+			}
+		} else {
+			for(int j=Line[i].size()-1; j>=0; j--){
+				//printf("Line[%d][%d][1] = %d\n", i, j, Line[i][j][1]);
+				if(fabs(Line[i][j][1]-max[i]) > kickline_y)
+					Line[i].erase(Line[i].begin()+j);
+			}
+		}
+	}
+	
 	return Line;
 	
+}
+
+int find_max(int* table, int dir)
+{
+	int max = 0, index;
+	if(dir==0 || dir==3){
+		index = 0;
+		for(int i=0; i<WIDTH/10; i++){
+			if(table[i]>max){
+				max = table[i];
+				index = i;
+			}
+		}
+	} else if(dir==1 || dir==2){
+		index = WIDTH/10-1;
+		for(int i=WIDTH/10-1; i>=0; i--){
+			if(table[i]>max){
+				max = table[i];
+				index = i;
+			}
+		}
+	}
+	return index*10+5;
 }
 
 void findLine(vector<Point>& src, double& m, double& k)
@@ -223,11 +308,13 @@ void calAveragePoint(vector<Point> src, double& barx, double& bary)
 
 void kickOutDataPoint(vector<Point>& src, double m, double k)
 {
-	int size = src.size();
-	for(int i=size-1; i>=0; i--){
-		double nu = fabs(m*src[i].x - src[i].y + k);
-		double de = sqrt(m*m+1);
-		if(nu/de > kickpoint) src.erase(src.begin()+i);
+	for(double j=1; kickpoint*j>30; j*=0.5){
+		//printf("%d*%f=%f\n", kickpoint, j, kickpoint*j);
+		for(int i=src.size()-1; i>=0; i--){
+			double nu = fabs(m*src[i].x - src[i].y + k);
+			double de = sqrt(m*m+1);
+			if(nu/de > kickpoint*j) src.erase(src.begin()+i);
+		}
 	}
 }
 

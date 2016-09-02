@@ -64,8 +64,12 @@ int main(int argc, char **argv)
 	}
 	imwrite("src.jpg", src);
 	
+	// blur
+	Mat blur;
+	medianBlur(src, blur, 47);
+	
 	// filter
-	Mat dark = filterByRightEdge(src);
+	Mat dark = filterByRightEdge(blur);
 	imwrite(argv[2], dark);
 	
 	// find 4 edges

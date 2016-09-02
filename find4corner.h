@@ -14,6 +14,7 @@ using namespace cv;
 vector<Point2d> findLineHough(Mat src, Mat& mid, Mat& dst);
 Point2d findLineRegression(Mat src, Mat& dst, int dir);
 vector<vector<Vec4i>> classifyLine(vector<Vec4i> lines, int r, int c);
+int find_max(int* table, int dir);
 vector<Point> collectData(Mat src, int dir);
 void findLine(vector<Point>& src, double& m, double& k);
 void calAveragePoint(vector<Point> src, double& barx, double& bary);

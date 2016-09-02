@@ -1,15 +1,16 @@
 #include "brightfilter.h"
 #define brightscale 25
 #define colorscale 85
+#define blurscale 47
 
 void helpOfBrightfilter()
 {
-	printf("\n/*---------------------------------------------------\n");
-	printf(" This program is used to filter the image by bright.\n");
+	printf("\n/*-----------------------------------------------------\n");
+	printf(" This program is used to saperate background and theme.\n");
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: the image only have white and black (Mat)\n");
 	printf(" usage: ./brightfilter [original] [result]\n");
-	printf("---------------------------------------------------*/\n");
+	printf("-----------------------------------------------------*/\n");
 }
 
 /*
@@ -25,12 +26,18 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	
+	// blur
+	Mat mid;
+	medianBlur(src, mid, blurscale);
+	
 	// filter
 	Mat dst = filterByRightEdge(src);
 	imwrite(argv[2], dst);
+	//imwrite("blur.jpg", mid);
 	
 	// finished
 	imshow("Origin", src);
+	imshow("Blur", mid);
 	imshow("Filtered", dst);
 	waitKey(0);
 	return 0;

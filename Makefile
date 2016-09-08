@@ -18,6 +18,8 @@ transform.o: transform.cpp
 cut.o: cut.cpp
 	$(CC) -c cut.cpp $(CV) $(CORE) $(GUI) $(C++)
 
+revise: revise.cpp
+	$(CC) revise.cpp $(CV) $(CORE) $(GUI) -o revise $(C++)
 opencamera: opencamera.cpp
 	$(CC) opencamera.cpp $(CV) $(CORE) $(GUI) -o opencamera $(C++)
 find4corner: find4corner.cpp

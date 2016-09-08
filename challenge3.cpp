@@ -3,14 +3,15 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include "brightfilter.h"
 #include "find4corner.h"
 #include "transform.h"
 #include "cut.h" 
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 2304
+#define HEIGHT 1536
 
 using namespace std;
 using namespace cv;
@@ -22,7 +23,7 @@ void help()
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: 256 32*32 images (Mat)\n");
 	printf(" It will save result images named cutXXX.jpg in cut_result.\n");
-	printf(" usage: ./challenge3 [src]/camera [dark] [showcorner] [adjust]\n");
+	printf(" usage: ./challenge3 [src]/camera [adjust]\n");
 	printf(" dark: the image only have white and black.\n");
 	printf(" showcorner: the image with edge points, edges, and 4 corners.\n");
 	printf(" adjust: a 512*512 square image\n");
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
 	}
 	imwrite("src.jpg", src);
 	
-	// blur
+	/*/ blur
 	Mat blur;
 	medianBlur(src, blur, 47);
 	
@@ -89,10 +90,29 @@ int main(int argc, char **argv)
 	printf("\n");
 	for(int i=0; i<4; i++) printf("corner[%d] = (%d,%d)\n", i, corners[i].x, corners[i].y);
 	imwrite(argv[3], showcorner);
+	*/
+	
+	// get corners
+	vector<Point> corners;
+	char line[5];
+	fstream fin;
+	fin.open("corner_file.txt", ios::in);
+	int n=0;
+	while(fin.getline(line, sizeof(line), ' ')){
+		int i=0, pixel=0;
+		while(line[i]!='\0'){
+			pixel *= 10;
+			pixel += line[i]-'0';
+			i++;
+		}
+		if(n%2==0) corners.push_back(Point(pixel, 0));
+		else corners[n/2].y = pixel;
+		n++;
+	}
 	
 	// transform
 	Mat adjust = transform(src, corners);
-	imwrite(argv[4], adjust);
+	imwrite(argv[2], adjust);
 	
 	// cut
 	vector<Mat> dst = cut(adjust);
@@ -110,9 +130,9 @@ int main(int argc, char **argv)
 	// finished
 	printf("\n");
 	imshow("Origin", src);
-	imshow("Dark", dark);
-	imshow("Edge", mid);
-	imshow("Corners", showcorner);
+	//imshow("Dark", dark);
+	//imshow("Edge", mid);
+	//imshow("Corners", showcorner);
 	imshow("Transformed", adjust);
 	waitKey(0);
 	

@@ -13,6 +13,16 @@ using namespace cv;
 Mat src;
 vector<Point> corners;
 
+void help()
+{
+	printf("\n/*----------------------------------------------------------------------------\n");
+	printf(" This program is used to revise.\n");
+	printf(" Execute the program and click 4 corners in order, then press any key to exit.\n");
+	printf(" It will save corners information in corner_file.txt.\n");
+	printf(" usage: ./revise [src]/camera\n");
+	printf("----------------------------------------------------------------------------*/\n");
+}
+
 void onMouse(int event, int x, int y, int flags, void* para)
 {
 	if(event==CV_EVENT_LBUTTONDOWN) corners.push_back(Point(x, y));

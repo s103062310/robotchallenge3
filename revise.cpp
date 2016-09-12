@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 	
 	// mouse event
 	namedWindow("Output", CV_WINDOW_NORMAL);
-	resizeWindow("Output", WIDTH*0.5, HEIGHT*0.5);
+	resizeWindow("Output", WIDTH, HEIGHT);
 	setMouseCallback("Output", onMouse, 0);
 	imshow("Output", src);
 	
@@ -76,7 +76,6 @@ int main(int argc, char **argv)
 		printf("Point[%d]: (%d,%d)\n", i, corners[i].x, corners[i].y);
 	}
 	fp.close();
-	
 	return 0;
 	
 }

@@ -4,8 +4,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include "brightfilter.h"
-#include "find4corner.h"
+//#include "brightfilter.h"
+//#include "find4corner.h"
 #include "transform.h"
 #include "cut.h" 
 #include "opencv2/core/core.hpp"
@@ -23,7 +23,7 @@ void help()
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: 256 32*32 images (Mat)\n");
 	printf(" It will save result images named cutXXX.jpg in cut_result.\n");
-	printf(" usage: ./challenge3 [src]/camera [adjust]\n");
+	printf(" usage: ./challenge3 [src]/camera [src] [adjust]\n");
 	printf(" dark: the image only have white and black.\n");
 	printf(" showcorner: the image with edge points, edges, and 4 corners.\n");
 	printf(" adjust: a 512*512 square image\n");
@@ -49,7 +49,15 @@ int main(int argc, char **argv)
 			printf("fail to open.\n");
 			return -1;
 		}
-		cap >> src;
+		cout << ":)\n";
+		int i = 1;
+		namedWindow("Origin", 1);
+		while(i>0){
+			cap >> src;
+			imshow("Origin", src);
+			i--;
+		}
+		cout << ":}\n";
 
 	} else {
 	
@@ -63,7 +71,7 @@ int main(int argc, char **argv)
 		printf("Can not load images.\n");
 		return -1;
 	}
-	imwrite("src.jpg", src);
+	imwrite(argv[2], src);
 	
 	/*/ blur
 	Mat blur;
@@ -112,7 +120,7 @@ int main(int argc, char **argv)
 	
 	// transform
 	Mat adjust = transform(src, corners);
-	imwrite(argv[2], adjust);
+	imwrite(argv[3], adjust);
 	
 	// cut
 	vector<Mat> dst = cut(adjust);
@@ -129,7 +137,7 @@ int main(int argc, char **argv)
 	
 	// finished
 	printf("\n");
-	imshow("Origin", src);
+	//imshow("Origin", src);
 	//imshow("Dark", dark);
 	//imshow("Edge", mid);
 	//imshow("Corners", showcorner);

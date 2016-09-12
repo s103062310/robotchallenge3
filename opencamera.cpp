@@ -3,6 +3,8 @@
 #include <iostream>
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#define WIDTH 2304
+#define HEIGHT 1536 
 
 using namespace cv;
 using namespace std;
@@ -32,8 +34,8 @@ int main(){
 	
 	// open camera
 	VideoCapture cap(0);
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, WIDTH);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
 	if(!cap.isOpened()){
 		printf("fail to open.\n");
 		return -1;

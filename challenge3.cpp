@@ -8,6 +8,7 @@
 //#include "find4corner.h"
 #include "transform.h"
 #include "cut.h" 
+#include "classifier.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #define WIDTH 2304
@@ -18,16 +19,16 @@ using namespace cv;
 
 void help()
 {
-	printf("\n/*------------------------------------------------------------------------\n");
+	printf("\n/*-------------------------------------------------------------------------------\n");
 	printf(" This program integrate find4corner, transform and cut.\n");
 	printf(" intput: the photo taken by the camera (Mat)\n");
 	printf(" output: 256 32*32 images (Mat)\n");
 	printf(" It will save result images named cutXXX.jpg in cut_result.\n");
-	printf(" usage: ./challenge3 [src]/camera [src] [adjust]\n");
+	printf(" usage: ./challenge3 [src]/camera [src] [adjust] [model] [trained] [mean] [label]\n");
 	printf(" dark: the image only have white and black.\n");
 	printf(" showcorner: the image with edge points, edges, and 4 corners.\n");
 	printf(" adjust: a 512*512 square image\n");
-	printf("------------------------------------------------------------------------*/\n");
+	printf("-------------------------------------------------------------------------------*/\n");
 }
 
 int main(int argc, char **argv)
@@ -134,6 +135,16 @@ int main(int argc, char **argv)
 	}
 	
 	// TODO: object detect
+	Classifier classifier(argv[4], argv[5], argv[6], argv[7]);
+	for(int i=0; i<dst.size(); i++){
+		cout << i << ": " ;
+		vector<Prediction> predictions = classifier.classify(dst[i]);
+		for(int j=0; j<predictions.size(); j++){
+			cout << predictions[j].first << " " << predictions[j].second << " ";
+		}
+		cout << endl;
+	}
+	
 	
 	// finished
 	printf("\n");

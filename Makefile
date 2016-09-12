@@ -5,14 +5,14 @@ PROC = -lopencv_imgproc
 CC = g++
 C++ = -std=c++11
 
-challenge3: challenge3.o brightfilter.o  find4corner.o transform.o cut.o 
-	$(CC) -o challenge3 challenge3.o brightfilter.o find4corner.o transform.o cut.o $(CV) $(CORE) $(GUI) $(C++)
+challenge3: challenge3.o transform.o cut.o 
+	$(CC) -o challenge3 challenge3.o transform.o cut.o $(CV) $(CORE) $(GUI) $(C++)
 challenge3.o: challenge3.cpp
 	$(CC) -c challenge3.cpp $(CV) $(CORE) $(GUI) $(C++)
-brightfilter.o: brightfilter.cpp
-	$(CC) -c brightfilter.cpp $(CV) $(CORE) $(GUI) $(PROC) $(C++)
-find4corner.o: find4corner.cpp 
-	$(CC) -c find4corner.cpp $(CV) $(CORE) $(GUI) $(PROC) $(C++)
+#brightfilter.o: brightfilter.cpp
+#	$(CC) -c brightfilter.cpp $(CV) $(CORE) $(GUI) $(PROC) $(C++)
+#find4corner.o: find4corner.cpp 
+#	$(CC) -c find4corner.cpp $(CV) $(CORE) $(GUI) $(PROC) $(C++)
 transform.o: transform.cpp
 	$(CC) -c transform.cpp $(CV) $(CORE) $(GUI) $(PROC) $(C++)
 cut.o: cut.cpp
